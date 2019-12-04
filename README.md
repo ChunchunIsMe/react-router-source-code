@@ -107,10 +107,43 @@ value = {
 1. 创建一个字符串 cacheKey 由传入的 option 生成
 2. 将`cache[cachekey]`这个值赋值给 pathCache 如果`cache[cachekey]`不存在则 `pathCache = cache[cachekey] = {}`
 3. 如果`pathCache[path]`存在则直接返回
-3. 创建一个 keys 空数组，然后通过 pathToRegexp 传入path，key，options创建一个 regexp
-4. 将结果储存在 {regexp,keys} 赋值给 result
-5. 如果缓存还没有超过限制则加入缓存中并且缓存计数+1
-6. 将 result 返回
+4. 创建一个 keys 空数组，然后通过 pathToRegexp 传入path，key，options创建一个 regexp
+5. 将结果储存在 {regexp,keys} 赋值给 result
+6. 如果缓存还没有超过限制则加入缓存中并且缓存计数+1
+7. 将 result 返回
 #### matchPath
+这个函数就是用来匹配路由的，参数是 pathname(匹配的路径)、options(配置参数)
+
+我们把步骤分为 return 外和 return 内
+
+首先 return 外
+1. 如果 options 是字符串则将 options 设置为 {path: options}
+2. 从 options 中结构赋值出(括号内代表默认值) path/exact(false)/strict(false)/sensitive(false)
+3. 创建一个 paths 数组值 为 [].concat(path)
+
+> 说明：options 下参数代表的意思 path(路由)、exact(是否完全匹配)、strict(如果为true，则regexp允许可选的尾部定界符匹配)、sensitive(如果为true，则正则表达式将区分大小写。)
+
+return 内
+
+matchPath 最终返回 paths.reduce 的结果，匹配到了的话则会返回一个对象，没有匹配到则会返回 null 我们直接来看循环内
+
+1. 首先 reduce 的初始值设置为 null
+2. 看循环内，如果上一次的结果不为 null 则直接返回 matched
+3. 将 循环到的路由path/配置 传入 compilePath 生成 regexp 和 路由参数 keys 比如 '/arr/:id' 会生成 匹配 /arr 的路由正则 和 keys [{name: 'id' ....}]
+4. 将传入的 pathname 进行匹配正则如果 Boolean(match) 为 false 则返回 null
+5. 从 match 中解构出 url、values 数组
+6. 判断 匹配的 url 是否和 pathname 全等
+7. 如果参数设置了全等，url 和 pathname 不是全等则返回 false
+8. 匹配成功则最终返回路径对象
+
+这里需要注意的就是 paths = [].concat(path);
+
+concat 比较神奇 如果传入的参数不是数组则会直接在数组中加入这个参数，所以这里用结构赋值不行
+```
+[...'123'] // ['1', '2', '3']
+[].concat('123') // ['123']
+[].concat(() => {}) // [()=>{}]
+[...(()=>{})] // error
+```
 ### Route.js
 因为最终显示的都是 Route 所以我们接下来来看 Route
