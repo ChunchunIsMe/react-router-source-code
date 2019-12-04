@@ -192,3 +192,23 @@ React.createElement(
 
 // 创建并返回指定类型的新 React 元素。其中类型参数既可以是标签名字符串('div')，也可以是 React组件类型 (class/function) 或是 React.fragment(<></>) 类型
 ```
+### Switch.js
+其实这个也是很简单，和上面的一样，都是用 context 获取到路由之后循环自己的 children 进行遍历匹配如果匹配到了则用 React.cloneElement 并传入 location 和 computedMatch 来显示 这个子集 如果没有匹配到则返回 null。
+
+API 
+```
+React.Children.foreach(children, func)
+// 在children里的每一个直接子元素调用该函数。 并且将 this 这只为 thisArg 没有返回值
+React.cloneElement(
+  element,
+  [props],
+  [...children]
+)
+// 以 element 元素为样板克隆并返回新的 React 元素。返回元素的 props 是将新的 props 与原始元素的 props 浅层合并后的结果。新的子元素将取代现有的子元素，而来自原始元素的 key 和 ref 将被保留
+```
+### withRouter.js
+1. 这个是一个高阶组件，使用这个高阶组件之后就会返回一个必定渲染的 Route 组件(传入withRouter的参数正常的话) 
+2. 然后将 本来该 传入 compomemt 的 props 传入了该组件 然后特意定制了一个属性来给你存放 ref 不过 react 使用函数式组件是可以通过 React.forwardRef 拿到 ref 的 所以这里还是比较多余，
+3. 然后 Route 在 children 是函数的情况下会调用并且传入 props 里面有 location match 等， withRouter 将 props 也传入了 Component 里，所以用了这个就是将 location match 等传入了 props 里 我们同样可以使用 __RouterContext.comsumer 来获取这些值。
+### Lifecycle.js
+其他功能基本上都是基于这个做的，这个就是设置一个监听，每次这个组件执行都会调用他们
