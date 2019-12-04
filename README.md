@@ -146,4 +146,49 @@ concat 比较神奇 如果传入的参数不是数组则会直接在数组中加
 [...(()=>{})] // error
 ```
 ### Route.js
-因为最终显示的都是 Route 所以我们接下来来看 Route
+首先他定义了一个函数 isEmptyChildren 用来判断传入的参数是否没有一个组件
+
+React.Children.count(children) 返回 children 中组件总数量
+
+因为最终显示的都是 Route 所以我们接下来来看 Route，Route 直接调用render返回个了一个 DOM，这个 DOM 用 consumer 直接拿到 context 内容，然后我们来看 Consumer 中都做了什么
+
+1. 判断 context 是否存在不存在直接报错
+2. 如果 Route 没有传入 location 则取 context.location 赋值给 location
+3. 定义 match 存放是否匹配到这个路由 首先确认有没有传入 computedMatch 如果存在则赋值为这个因为 Switch 会传入这个值，如果不存在则判断 props.path 是否存在，存在则使用 matchPath 匹配结果并且获取，不存在则直接使用 context.match
+4. 将 context 结构赋值给 props 并将 location 和 match 属性覆盖
+5. 从 props 属性中获取 children Component render
+6. 如果 children 是数组并且长度为 0 则直接把 children 赋值为 null
+7. 如果 children 是 function 则传入 props 之后调用结果再赋值给children，此时如果 children 为 undefined 则会将 children 赋值为 null 如果是开发环境还会抛出警告
+8. 最后的 return 中 又创建了一个 Provider 并将 props 传入
+9. 最后这个判断还是比较明显的 就是判断这个那个最后显示,我们再整理一下就比较清晰了
+```
+if (children && !isEmptyChildren(children)) {
+  return chidren
+} else {
+  if (props.match) {
+    if(component) {
+      return React.createElement(component, props);
+    } else {
+      if (render) {
+        return render(props);
+      } else {
+        return null;
+      }
+    }
+  } else {
+    return null
+  }
+}
+```
+最后如果是开发环境则还做了 props 的 type 检测，并且在渲染完成和更新的时候加入一些警告
+
+我们可以看到这里用到的 React API
+```
+React.createElement(
+  type,
+  [props],
+  [...chidren]
+);
+
+// 创建并返回指定类型的新 React 元素。其中类型参数既可以是标签名字符串('div')，也可以是 React组件类型 (class/function) 或是 React.fragment(<></>) 类型
+```
