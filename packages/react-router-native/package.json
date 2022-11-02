@@ -37,7 +37,7 @@
     "jest": "^23.6.0",
     "jest-circus": "^23.6.0",
     "react": "^16.3.1",
-    "react-native": "^0.55.3",
+    "react-native": "^0.70.4",
     "react-test-renderer": "^16.3.1"
   }
 }
